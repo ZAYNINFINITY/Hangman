@@ -8,6 +8,7 @@ add_library(hangman_core
   src/core/HangmanGame.cpp
   src/core/WordBank.cpp
   src/core/Category.cpp
+  src/core/WordRepository.cpp
 )
 target_include_directories(hangman_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
