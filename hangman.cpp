@@ -143,9 +143,13 @@ bool tryReadGuessLetter(GuessInput& out) {
 
 void printTurn(const GameState& state, const GameConfig& config) {
   int wrongGuesses = config.maxAttempts - state.attemptsRemaining;
+  int stage = 0;
+  if (config.maxAttempts > 0 && wrongGuesses > 0) {
+    stage = (wrongGuesses * 6 + config.maxAttempts - 1) / config.maxAttempts;
+  }
 
   std::cout << "\nAttempts remaining: " << state.attemptsRemaining << "\n";
-  drawHangmanStage(wrongGuesses);
+  drawHangmanStage(stage);
   std::cout << "Word:   " << formatMaskedWord(state.word, state.revealed) << "\n";
   std::cout << "Guessed:"
             << (state.guessedLetters.empty() ? " (none)" : " " + formatGuessedLetters(state.guessedLetters))
