@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_library(hangman_core
   src/core/HangmanGame.cpp
   src/core/WordBank.cpp
+  src/core/Category.cpp
 )
 target_include_directories(hangman_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
