@@ -97,6 +97,14 @@ void drawHangmanStage(int wrongGuesses) {
 unsigned int parseSeed(int argc, char** argv) {
   for (int i = 1; i < argc; ++i) {
     std::string arg = argv[i];
+    const std::string prefix = "--seed=";
+    if (arg.rfind(prefix, 0) == 0 && arg.size() > prefix.size()) {
+      try {
+        return static_cast<unsigned int>(std::stoul(arg.substr(prefix.size())));
+      } catch (...) {
+        return 0;
+      }
+    }
     if (arg == "--seed" && i + 1 < argc) {
       try {
         return static_cast<unsigned int>(std::stoul(argv[i + 1]));
