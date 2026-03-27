@@ -108,14 +108,28 @@ unsigned int parseSeed(int argc, char** argv) {
   return static_cast<unsigned int>(std::time(nullptr));
 }
 
-bool tryReadGuessLetter(char& outLetter) {
+struct GuessInput {
+  char letter = '\0';
+  bool hadExtraLetters = false;
+};
+
+bool tryReadGuessLetter(GuessInput& out) {
   std::string input;
   if (!std::getline(std::cin >> std::ws, input)) return false;
   if (input.empty()) return false;
 
-  char ch = input[0];
-  if (!isAlphaLetter(ch)) return false;
-  outLetter = normalizeLetter(ch);
+  char firstLetter = '\0';
+  int letterCount = 0;
+  for (char ch : input) {
+    if (!isAlphaLetter(ch)) continue;
+    if (firstLetter == '\0') firstLetter = ch;
+    ++letterCount;
+  }
+
+  if (firstLetter == '\0') return false;
+
+  out.letter = normalizeLetter(firstLetter);
+  out.hadExtraLetters = (letterCount > 1);
   return true;
 }
 
@@ -183,13 +197,17 @@ int runGame(int argc, char** argv) {
     printTurn(state, config);
 
     std::cout << "Enter a letter: ";
-    char guess = '\0';
-    if (!tryReadGuessLetter(guess)) {
+    GuessInput guessInput;
+    if (!tryReadGuessLetter(guessInput)) {
       std::cout << "Invalid input. Please enter a single letter (A-Z).\n";
       continue;
     }
 
-    applyGuess(state, config, guess);
+    if (guessInput.hadExtraLetters) {
+      std::cout << "Using '" << guessInput.letter << "' from your input.\n";
+    }
+
+    applyGuess(state, config, guessInput.letter);
   }
 
   printTurn(state, config);
