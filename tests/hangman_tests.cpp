@@ -1,9 +1,12 @@
 #include <iostream>
+#include <filesystem>
+#include <fstream>
 #include <stdexcept>
 #include <string>
 
 #include "core/HangmanGame.hpp"
 #include "core/WordBank.hpp"
+#include "core/WordRepository.hpp"
 
 namespace {
 
@@ -45,12 +48,45 @@ void test_wordbank_empty_throws() {
   expect(threw, "WordBank::randomWord should throw on empty input");
 }
 
+void test_file_word_repository_validation() {
+  std::filesystem::path dir = std::filesystem::temp_directory_path() / "hangman_test_words";
+  std::filesystem::create_directories(dir);
+
+  std::filesystem::path animals = dir / "animals.txt";
+  {
+    std::ofstream out(animals, std::ios::binary);
+    out << "CAT\r\n";
+    out << "DOG\r\n";
+    out << "NOT-ALPHA\r\n";
+    out << "A\r\n";
+    out << "MOUSE\r\n";
+  }
+
+  hangman::FileWordRepository repo(dir);
+  hangman::WordValidationOptions options;
+  options.minLength = 2;
+  options.maxLength = 10;
+
+  hangman::WordLoadResult loaded = repo.load(hangman::Category::Animals, options);
+  expect(!loaded.words.empty(), "should load at least some valid words");
+
+  // Ensure filtered entries are excluded and valid ones are uppercased.
+  expect(std::find(loaded.words.begin(), loaded.words.end(), "CAT") != loaded.words.end(), "CAT should be present");
+  expect(std::find(loaded.words.begin(), loaded.words.end(), "DOG") != loaded.words.end(), "DOG should be present");
+  expect(std::find(loaded.words.begin(), loaded.words.end(), "MOUSE") != loaded.words.end(), "MOUSE should be present");
+  expect(std::find(loaded.words.begin(), loaded.words.end(), "A") == loaded.words.end(), "too-short words should be excluded");
+
+  std::error_code ec;
+  std::filesystem::remove_all(dir, ec);
+}
+
 }  // namespace
 
 int main() {
   test_masked_word();
   test_invalid_and_loss();
   test_wordbank_empty_throws();
+  test_file_word_repository_validation();
 
   if (failures == 0) {
     std::cout << "All tests passed.\n";
@@ -60,4 +96,3 @@ int main() {
   std::cerr << failures << " test(s) failed.\n";
   return 1;
 }
-
