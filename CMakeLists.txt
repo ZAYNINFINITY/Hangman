@@ -13,7 +13,12 @@ add_library(hangman_core
 target_include_directories(hangman_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # Legacy CLI (kept as-is)
-add_executable(hangman_cli hangman.cpp)
+add_executable(hangman_cli
+  src/cli/main.cpp
+)
+target_link_libraries(hangman_cli PRIVATE hangman_core)
+
+add_executable(hangman_cli_legacy hangman.cpp)
 
 # GUI (Windows-only for now)
 if(WIN32)
