@@ -22,3 +22,9 @@ if(WIN32)
   target_compile_definitions(hangman_gui PRIVATE UNICODE _UNICODE)
 endif()
 
+enable_testing()
+add_executable(hangman_tests
+  tests/hangman_tests.cpp
+)
+target_link_libraries(hangman_tests PRIVATE hangman_core)
+add_test(NAME hangman_tests COMMAND hangman_tests)
