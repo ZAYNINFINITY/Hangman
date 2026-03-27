@@ -1,16 +1,20 @@
 #include <windows.h>
 
 #include <chrono>
+#include <filesystem>
 #include <string>
 
+#include "core/Category.hpp"
 #include "core/HangmanGame.hpp"
 #include "core/WordBank.hpp"
+#include "core/WordRepository.hpp"
 
 namespace {
 
 constexpr int kIdGuessEdit = 101;
 constexpr int kIdGuessButton = 102;
 constexpr int kIdNewGameButton = 103;
+constexpr int kIdCategoryCombo = 104;
 
 constexpr int kIdMaskedStatic = 201;
 constexpr int kIdAttemptsStatic = 202;
@@ -42,6 +46,8 @@ std::wstring getText(HWND hwnd, int controlId) {
 
 struct UiState {
   hangman::HangmanGame game{hangman::HangmanConfig{10}};
+  hangman::FileWordRepository repo{std::filesystem::path("data") / "words"};
+  hangman::Category category = hangman::Category::Animals;
   std::vector<std::string> words = hangman::WordBank::defaultWords();
 };
 
@@ -67,7 +73,24 @@ void refreshUi(HWND hwnd, UiState& state) {
   }
 }
 
+void showStatus(HWND hwnd, const wchar_t* msg);
+
 void startNewGame(HWND hwnd, UiState& state) {
+  HWND combo = GetDlgItem(hwnd, kIdCategoryCombo);
+  LRESULT selected = (combo != nullptr) ? SendMessageW(combo, CB_GETCURSEL, 0, 0) : 0;
+  if (selected == 1) state.category = hangman::Category::Countries;
+  else if (selected == 2) state.category = hangman::Category::Movies;
+  else state.category = hangman::Category::Animals;
+
+  hangman::WordLoadResult loaded = state.repo.load(state.category);
+  if (!loaded.words.empty()) {
+    state.words = std::move(loaded.words);
+    showStatus(hwnd, (L"Loaded category: " + toWide(hangman::categoryDisplayName(state.category))).c_str());
+  } else {
+    state.words = hangman::WordBank::defaultWords();
+    showStatus(hwnd, L"Could not load word files; using built-in list.");
+  }
+
   std::string w = hangman::WordBank::randomWord(state.words, timeSeed());
   state.game.startNewRound(std::move(w));
   setText(hwnd, kIdGuessEdit, L"");
@@ -103,6 +126,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                     110, 155, 80, 24, hwnd, (HMENU)kIdGuessButton, nullptr, nullptr);
       CreateWindowW(L"BUTTON", L"New Game", WS_CHILD | WS_VISIBLE,
                     200, 155, 100, 24, hwnd, (HMENU)kIdNewGameButton, nullptr, nullptr);
+
+      CreateWindowW(L"STATIC", L"Category:", WS_CHILD | WS_VISIBLE,
+                    320, 158, 70, 20, hwnd, nullptr, nullptr, nullptr);
+      HWND hCombo = CreateWindowW(L"COMBOBOX", L"", CBS_DROPDOWNLIST | WS_CHILD | WS_VISIBLE,
+                                  395, 155, 150, 200, hwnd, (HMENU)kIdCategoryCombo, nullptr, nullptr);
+      SendMessageW(hCombo, CB_ADDSTRING, 0, (LPARAM)L"Animals");
+      SendMessageW(hCombo, CB_ADDSTRING, 0, (LPARAM)L"Countries");
+      SendMessageW(hCombo, CB_ADDSTRING, 0, (LPARAM)L"Movies");
+      SendMessageW(hCombo, CB_SETCURSEL, 0, 0);
 
       startNewGame(hwnd, *ui);
       return 0;
