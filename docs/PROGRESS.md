@@ -7,7 +7,8 @@ This file tracks what’s implemented versus what’s planned in `docs/LEVELS_BL
 - Level 1: In progress (CLI refactor + core tests done)
 - Level 2: In progress (categories + file loader + CLI/GUI wiring)
 - Level 3: In progress (CI + build hygiene)
-- Level 4+: Not started
+- Level 4: In progress (difficulty presets)
+- Level 5+: Not started
 
 ## Level 1 Notes
 
@@ -36,3 +37,11 @@ Completed:
 - Enabled warnings in CMake and defined `HANGMAN_VERSION`.
 - Added `--help` and `--version` to the core-based CLI.
 - Added public headers under `include/`.
+
+## Level 4 Notes
+
+Completed:
+- Added `Difficulty` model and parsing helpers.
+- Added `Ruleset` tables mapping difficulty to attempts/multiplier.
+- Wired difficulty selection into CLI and GUI.
+- Added unit tests for difficulty and ruleset behavior.
