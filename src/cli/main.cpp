@@ -25,8 +25,9 @@ const char* versionString() {
 void printHelp() {
   std::cout << "Hangman CLI\n\n";
   std::cout << "Usage:\n";
-  std::cout << "  hangman_cli [--category <animals|countries|movies>] [--seed <n>]\n\n";
+  std::cout << "  hangman_cli [--difficulty <easy|normal|hard>] [--category <animals|countries|movies>] [--seed <n>]\n\n";
   std::cout << "Options:\n";
+  std::cout << "  --difficulty <id> Choose difficulty preset\n";
   std::cout << "  --category <id>   Choose word category\n";
   std::cout << "  --seed <n>        RNG seed (reproducible games)\n";
   std::cout << "  --help            Show this help\n";
