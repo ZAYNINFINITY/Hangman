@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(Hangman LANGUAGES CXX)
+project(Hangman VERSION 1.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -11,6 +11,14 @@ add_library(hangman_core
   src/core/WordRepository.cpp
 )
 target_include_directories(hangman_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+if(MSVC)
+  target_compile_options(hangman_core PRIVATE /W4 /permissive-)
+else()
+  target_compile_options(hangman_core PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+target_compile_definitions(hangman_core PUBLIC HANGMAN_VERSION="${PROJECT_VERSION}")
 
 # Legacy CLI (kept as-is)
 add_executable(hangman_cli
