@@ -5,7 +5,9 @@
 #include <string>
 
 #include "core/Category.hpp"
+#include "core/Difficulty.hpp"
 #include "core/HangmanGame.hpp"
+#include "core/Ruleset.hpp"
 #include "core/WordBank.hpp"
 #include "core/WordRepository.hpp"
 
@@ -15,6 +17,7 @@ constexpr int kIdGuessEdit = 101;
 constexpr int kIdGuessButton = 102;
 constexpr int kIdNewGameButton = 103;
 constexpr int kIdCategoryCombo = 104;
+constexpr int kIdDifficultyCombo = 105;
 
 constexpr int kIdMaskedStatic = 201;
 constexpr int kIdAttemptsStatic = 202;
@@ -48,6 +51,7 @@ struct UiState {
   hangman::HangmanGame game{hangman::HangmanConfig{10}};
   hangman::FileWordRepository repo{std::filesystem::path("data") / "words"};
   hangman::Category category = hangman::Category::Animals;
+  hangman::Difficulty difficulty = hangman::Difficulty::Normal;
   std::vector<std::string> words = hangman::WordBank::defaultWords();
 };
 
@@ -76,6 +80,15 @@ void refreshUi(HWND hwnd, UiState& state) {
 void showStatus(HWND hwnd, const wchar_t* msg);
 
 void startNewGame(HWND hwnd, UiState& state) {
+  HWND diffCombo = GetDlgItem(hwnd, kIdDifficultyCombo);
+  LRESULT diffSelected = (diffCombo != nullptr) ? SendMessageW(diffCombo, CB_GETCURSEL, 0, 0) : 1;
+  if (diffSelected == 0) state.difficulty = hangman::Difficulty::Easy;
+  else if (diffSelected == 2) state.difficulty = hangman::Difficulty::Hard;
+  else state.difficulty = hangman::Difficulty::Normal;
+
+  hangman::Ruleset rules = hangman::rulesetForDifficulty(state.difficulty);
+  state.game.setConfig(rules.hangman);
+
   HWND combo = GetDlgItem(hwnd, kIdCategoryCombo);
   LRESULT selected = (combo != nullptr) ? SendMessageW(combo, CB_GETCURSEL, 0, 0) : 0;
   if (selected == 1) state.category = hangman::Category::Countries;
@@ -135,6 +148,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       SendMessageW(hCombo, CB_ADDSTRING, 0, (LPARAM)L"Countries");
       SendMessageW(hCombo, CB_ADDSTRING, 0, (LPARAM)L"Movies");
       SendMessageW(hCombo, CB_SETCURSEL, 0, 0);
+
+      CreateWindowW(L"STATIC", L"Difficulty:", WS_CHILD | WS_VISIBLE,
+                    320, 188, 70, 20, hwnd, nullptr, nullptr, nullptr);
+      HWND hDiff = CreateWindowW(L"COMBOBOX", L"", CBS_DROPDOWNLIST | WS_CHILD | WS_VISIBLE,
+                                 395, 185, 150, 200, hwnd, (HMENU)kIdDifficultyCombo, nullptr, nullptr);
+      SendMessageW(hDiff, CB_ADDSTRING, 0, (LPARAM)L"Easy");
+      SendMessageW(hDiff, CB_ADDSTRING, 0, (LPARAM)L"Normal");
+      SendMessageW(hDiff, CB_ADDSTRING, 0, (LPARAM)L"Hard");
+      SendMessageW(hDiff, CB_SETCURSEL, 1, 0);
 
       startNewGame(hwnd, *ui);
       return 0;
@@ -219,7 +241,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow) {
 
   HWND hwnd = CreateWindowExW(
       0, kClassName, L"Hangman (GUI)", (WS_OVERLAPPEDWINDOW & ~WS_THICKFRAME),
-      CW_USEDEFAULT, CW_USEDEFAULT, 620, 260, nullptr, nullptr, hInstance, nullptr);
+      CW_USEDEFAULT, CW_USEDEFAULT, 620, 310, nullptr, nullptr, hInstance, nullptr);
 
   if (!hwnd) return 0;
 
