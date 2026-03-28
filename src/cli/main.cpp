@@ -6,7 +6,9 @@
 #include <vector>
 
 #include "core/Category.hpp"
+#include "core/Difficulty.hpp"
 #include "core/HangmanGame.hpp"
+#include "core/Ruleset.hpp"
 #include "core/WordBank.hpp"
 #include "core/WordRepository.hpp"
 
@@ -76,6 +78,20 @@ bool tryParseCategoryArg(int argc, char** argv, hangman::Category& out) {
   return false;
 }
 
+bool tryParseDifficultyArg(int argc, char** argv, hangman::Difficulty& out) {
+  for (int i = 1; i < argc; ++i) {
+    std::string arg = argv[i];
+    const std::string prefix = "--difficulty=";
+    if (arg.rfind(prefix, 0) == 0 && arg.size() > prefix.size()) {
+      return hangman::tryParseDifficultyId(arg.substr(prefix.size()), out);
+    }
+    if (arg == "--difficulty" && i + 1 < argc) {
+      return hangman::tryParseDifficultyId(argv[i + 1], out);
+    }
+  }
+  return false;
+}
+
 hangman::Category promptCategory() {
   while (true) {
     std::cout << "Choose a category:\n";
@@ -89,6 +105,23 @@ hangman::Category promptCategory() {
     if (line == "1") return hangman::Category::Animals;
     if (line == "2") return hangman::Category::Countries;
     if (line == "3") return hangman::Category::Movies;
+    std::cout << "Invalid choice. Try again.\n\n";
+  }
+}
+
+hangman::Difficulty promptDifficulty() {
+  while (true) {
+    std::cout << "Choose a difficulty:\n";
+    std::cout << "  1) Easy\n";
+    std::cout << "  2) Normal\n";
+    std::cout << "  3) Hard\n";
+    std::cout << "Enter choice (1-3): ";
+
+    std::string line;
+    if (!std::getline(std::cin >> std::ws, line)) return hangman::Difficulty::Normal;
+    if (line == "1") return hangman::Difficulty::Easy;
+    if (line == "2") return hangman::Difficulty::Normal;
+    if (line == "3") return hangman::Difficulty::Hard;
     std::cout << "Invalid choice. Try again.\n\n";
   }
 }
@@ -123,6 +156,10 @@ int main(int argc, char** argv) {
 
   unsigned int seed = parseSeed(argc, argv);
 
+  hangman::Difficulty difficulty = hangman::Difficulty::Normal;
+  const bool hasDifficulty = tryParseDifficultyArg(argc, argv, difficulty);
+  if (!hasDifficulty) difficulty = promptDifficulty();
+
   hangman::Category category = hangman::Category::Animals;
   const bool hasCategory = tryParseCategoryArg(argc, argv, category);
   if (!hasCategory) category = promptCategory();
@@ -137,12 +174,14 @@ int main(int argc, char** argv) {
     words = hangman::WordBank::defaultWords();
   }
 
-  hangman::HangmanGame game(hangman::HangmanConfig{10});
+  hangman::Ruleset rules = hangman::rulesetForDifficulty(difficulty);
+  hangman::HangmanGame game(rules.hangman);
   game.startNewRound(hangman::WordBank::randomWord(words, seed));
 
   std::cout << "Welcome to Hangman!\n";
+  std::cout << "Difficulty: " << hangman::difficultyDisplayName(difficulty) << "\n";
   std::cout << "Category: " << hangman::categoryDisplayName(category) << "\n";
-  std::cout << "Tip: use --seed <n> and --category <animals|countries|movies>\n";
+  std::cout << "Tip: use --seed <n>, --category <animals|countries|movies>, --difficulty <easy|normal|hard>\n";
 
   while (!game.isWon() && !game.isLost()) {
     std::cout << "\nAttempts remaining: " << game.attemptsRemaining() << "\n";
