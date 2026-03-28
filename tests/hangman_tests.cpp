@@ -7,6 +7,8 @@
 #include "core/HangmanGame.hpp"
 #include "core/WordBank.hpp"
 #include "core/WordRepository.hpp"
+#include "core/Difficulty.hpp"
+#include "core/Ruleset.hpp"
 
 namespace {
 
@@ -80,6 +82,21 @@ void test_file_word_repository_validation() {
   std::filesystem::remove_all(dir, ec);
 }
 
+void test_difficulty_parsing_and_rules() {
+  hangman::Difficulty d = hangman::Difficulty::Normal;
+  expect(hangman::tryParseDifficultyId("easy", d) && d == hangman::Difficulty::Easy, "parse easy");
+  expect(hangman::tryParseDifficultyId("NORMAL", d) && d == hangman::Difficulty::Normal, "parse normal");
+  expect(hangman::tryParseDifficultyId("hard", d) && d == hangman::Difficulty::Hard, "parse hard");
+
+  hangman::Ruleset easy = hangman::rulesetForDifficulty(hangman::Difficulty::Easy);
+  hangman::Ruleset normal = hangman::rulesetForDifficulty(hangman::Difficulty::Normal);
+  hangman::Ruleset hard = hangman::rulesetForDifficulty(hangman::Difficulty::Hard);
+
+  expect(easy.hangman.maxAttempts > normal.hangman.maxAttempts, "easy should have more attempts than normal");
+  expect(hard.hangman.maxAttempts < normal.hangman.maxAttempts, "hard should have fewer attempts than normal");
+  expect(hard.scoreMultiplier >= normal.scoreMultiplier, "hard should not have lower multiplier than normal");
+}
+
 }  // namespace
 
 int main() {
@@ -87,6 +104,7 @@ int main() {
   test_invalid_and_loss();
   test_wordbank_empty_throws();
   test_file_word_repository_validation();
+  test_difficulty_parsing_and_rules();
 
   if (failures == 0) {
     std::cout << "All tests passed.\n";
