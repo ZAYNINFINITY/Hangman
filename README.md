@@ -58,6 +58,7 @@ Outputs:
 ### Run (category mode)
 - `./hangman_cli --category animals --seed 123`
 - `./hangman_cli --category countries`
+- `./hangman_cli --difficulty hard --category movies`
 
 ### Word lists
 Word lists live in `data/words/*.txt` (one word per line). Non-alphabetic entries and out-of-range word lengths are skipped.
