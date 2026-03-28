@@ -10,6 +10,7 @@ add_library(hangman_core
   src/core/Category.cpp
   src/core/Difficulty.cpp
   src/core/WordRepository.cpp
+  src/core/Ruleset.cpp
 )
 target_include_directories(hangman_core PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/src
