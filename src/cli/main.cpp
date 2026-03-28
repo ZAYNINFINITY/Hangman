@@ -12,6 +12,25 @@
 
 namespace {
 
+const char* versionString() {
+#ifdef HANGMAN_VERSION
+  return HANGMAN_VERSION;
+#else
+  return "dev";
+#endif
+}
+
+void printHelp() {
+  std::cout << "Hangman CLI\n\n";
+  std::cout << "Usage:\n";
+  std::cout << "  hangman_cli [--category <animals|countries|movies>] [--seed <n>]\n\n";
+  std::cout << "Options:\n";
+  std::cout << "  --category <id>   Choose word category\n";
+  std::cout << "  --seed <n>        RNG seed (reproducible games)\n";
+  std::cout << "  --help            Show this help\n";
+  std::cout << "  --version         Show version\n";
+}
+
 bool isAlphaLetter(char ch) {
   unsigned char uch = static_cast<unsigned char>(ch);
   return (uch >= 'A' && uch <= 'Z') || (uch >= 'a' && uch <= 'z');
@@ -90,6 +109,18 @@ bool readGuess(char& outLetter) {
 }  // namespace
 
 int main(int argc, char** argv) {
+  for (int i = 1; i < argc; ++i) {
+    std::string arg = argv[i];
+    if (arg == "--help" || arg == "-h") {
+      printHelp();
+      return 0;
+    }
+    if (arg == "--version") {
+      std::cout << versionString() << "\n";
+      return 0;
+    }
+  }
+
   unsigned int seed = parseSeed(argc, argv);
 
   hangman::Category category = hangman::Category::Animals;
@@ -146,4 +177,3 @@ int main(int argc, char** argv) {
 
   return 0;
 }
-
