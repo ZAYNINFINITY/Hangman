@@ -6,7 +6,8 @@ This file tracks what’s implemented versus what’s planned in `docs/LEVELS_BL
 
 - Level 1: In progress (CLI refactor + core tests done)
 - Level 2: In progress (categories + file loader + CLI/GUI wiring)
-- Level 3+: Not started
+- Level 3: In progress (CI + build hygiene)
+- Level 4+: Not started
 
 ## Level 1 Notes
 
@@ -26,3 +27,12 @@ Completed:
 - Wired category selection into GUI and the new core-based CLI.
 - Added tests for file word loading and validation.
 - Updated README to document categories and word list format.
+
+## Level 3 Notes
+
+Completed:
+- Added `.gitignore` for build/IDE outputs.
+- Added GitHub Actions CI workflow for CMake build + tests.
+- Enabled warnings in CMake and defined `HANGMAN_VERSION`.
+- Added `--help` and `--version` to the core-based CLI.
+- Added public headers under `include/`.
