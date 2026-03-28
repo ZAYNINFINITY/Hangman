@@ -20,6 +20,7 @@ class HangmanGame {
  public:
   explicit HangmanGame(HangmanConfig config);
 
+  void setConfig(HangmanConfig config);
   void startNewRound(std::string word);
 
   GuessResult guessLetter(char letter);
@@ -44,4 +45,3 @@ class HangmanGame {
 };
 
 }  // namespace hangman
-

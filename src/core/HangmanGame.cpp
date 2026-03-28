@@ -13,6 +13,13 @@ HangmanGame::HangmanGame(HangmanConfig config) : config_(config) {
   }
 }
 
+void HangmanGame::setConfig(HangmanConfig config) {
+  if (config.maxAttempts <= 0) {
+    throw std::invalid_argument("maxAttempts must be > 0");
+  }
+  config_ = config;
+}
+
 void HangmanGame::startNewRound(std::string word) {
   if (word.empty()) {
     throw std::invalid_argument("word must not be empty");
@@ -96,4 +103,3 @@ char HangmanGame::normalize(char letter) const {
 }
 
 }  // namespace hangman
-
